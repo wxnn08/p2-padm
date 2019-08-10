@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">VideoStreamingP2</string>
+    <string name="visualizacoes">Visualizações:</string>
+    <string name="data">Data:</string>
+    <string name="download_error_title">Download error</string>
+    <string name="download_error_message">Failed to download remote image</string>
+</resources>
