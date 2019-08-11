@@ -6,16 +6,15 @@ import android.content.Intent
 import android.content.IntentFilter
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import com.wesley.videostreamingp2.App
 import com.wesley.videostreamingp2.viewmodel.MainViewModel
 import com.wesley.videostreamingp2.R
 import com.wesley.videostreamingp2.model.VideoList
 import com.wesley.videostreamingp2.model.VideoService
-import com.wesley.videostreamingp2.model.VideoServiceContract
 
 class MainActivity : AppCompatActivity() {
 
@@ -25,10 +24,9 @@ class MainActivity : AppCompatActivity() {
 
     private val videoListReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            Log.d("ALLINFORMATION", "Main entrei broadcast videoListReceiver")
-            intent?.takeIf { it.hasExtra(VideoServiceContract.RECENTS_LIST_READY_EXTRA) }.apply {
+            intent?.takeIf { it.hasExtra(mainViewModel.getVideoServiceContract().RECENTS_LIST_READY_EXTRA) }.apply {
                 VideoAdapter(this@MainActivity).apply {
-                    videoList = intent?.getSerializableExtra(VideoServiceContract.RECENTS_LIST_READY_EXTRA) as VideoList
+                    videoList = intent?.getSerializableExtra(mainViewModel.getVideoServiceContract().RECENTS_LIST_READY_EXTRA) as VideoList
                     filmeList.adapter = this
                     (filmeList.adapter as VideoAdapter).notifyDataSetChanged()
                 }
@@ -37,34 +35,49 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    private val errorListReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            intent?.takeIf { it.hasExtra(mainViewModel.getVideoServiceContract().NOTIFY_ERROR_EXTRA) }.apply {
+                intent?.getStringExtra(mainViewModel.getVideoServiceContract().NOTIFY_ERROR_EXTRA)?.let {
+                    notify(it)
+                }
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
 
         mainViewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
         filmeList = findViewById(R.id.main_recycler_filmes)
         filmeList.layoutManager = LinearLayoutManager(App.appContext)
         filmeList.setHasFixedSize(true)
-
-        Log.d("ALLINFORMATION", "Main criada")
     }
 
     override fun onStart() {
         super.onStart()
 
-        App.registerBroadcast(videoListReceiver, IntentFilter(VideoServiceContract.RECENTS_LIST_READY))
+        App.registerBroadcast(videoListReceiver, IntentFilter(mainViewModel.getVideoServiceContract().RECENTS_LIST_READY))
+        App.registerBroadcast(errorListReceiver, IntentFilter(mainViewModel.getVideoServiceContract().NOTIFY_ERROR))
 
         Intent(this, VideoService::class.java).apply {
-            action = VideoServiceContract.RECENTS_DOWNLOAD_ACTION
+            action = mainViewModel.getVideoServiceContract().RECENTS_DOWNLOAD_ACTION
             startService(this)
         }
-
-        Log.d("ALLINFORMATION", "Main OnStart")
     }
 
     override fun onStop() {
         super.onStop()
         App.unregisterBroadcast(videoListReceiver)
+        App.unregisterBroadcast(errorListReceiver)
+    }
+
+    private fun notify (string: String) {
+        Snackbar.make(
+            findViewById(R.id.layout_main),
+            string,
+            Snackbar.LENGTH_LONG
+        ).show()
     }
 }

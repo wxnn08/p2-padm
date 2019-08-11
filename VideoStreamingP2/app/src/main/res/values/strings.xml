@@ -1,7 +1,20 @@
 <resources>
-    <string name="app_name">VideoStreamingP2</string>
-    <string name="visualizacoes">Visualizações:</string>
-    <string name="data">Data:</string>
+    <string name="app_name">Video Streaming</string>
+    <string name="visualizacoes">Views:</string>
+    <string name="data">Date:</string>
     <string name="download_error_title">Download error</string>
     <string name="download_error_message">Failed to download remote image</string>
+    <string name="informacoes">Informations</string>
+    <string name="source">Source:</string>
+    <string name="speaker">Speaker:</string>
+    <string name="likes">Likes:</string>
+    <string name="lorem_ipsum">Lorem Ipsum</string>
+    <string name="title">Title:</string>
+    <string name="duration">Duration:</string>
+    <string name="dislikes">Dislikes:</string>
+    <string name="views">Views:</string>
+    <string name="recorded">Recorded:</string>
+    <string name="event">Event:</string>
+    <string name="like">Like</string>
+    <string name="dislike">Dislike</string>
 </resources>

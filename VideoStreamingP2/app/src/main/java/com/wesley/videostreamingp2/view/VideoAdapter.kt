@@ -9,14 +9,13 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.wesley.videostreamingp2.App
 import com.wesley.videostreamingp2.R
 import com.wesley.videostreamingp2.model.Video
 import com.wesley.videostreamingp2.model.VideoList
 import com.wesley.videostreamingp2.model.VideoService
-import com.wesley.videostreamingp2.model.VideoServiceContract
 import kotlinx.android.synthetic.main.list_video.view.*
 
 class VideoAdapter(private val mainActivity: MainActivity) : RecyclerView.Adapter<VideoAdapter.VideoViewHolder>() {
@@ -30,19 +29,16 @@ class VideoAdapter(private val mainActivity: MainActivity) : RecyclerView.Adapte
         val data = view.data
         val visualizacoes = view.visualizacoes
         lateinit var video: Video
-        // Pode adicionar botões aqui (com click listener)
 
         val thumbnailReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 val self = this
-                intent?.takeIf { it.hasExtra(VideoServiceContract.THUMBNAIL_READY_EXTRA)}?.apply {
-                    val videoRecebido = intent.getSerializableExtra(VideoServiceContract.THUMBNAIL_READY_EXTRA) as Video
+                intent?.takeIf { it.hasExtra(mainActivity.mainViewModel.getVideoServiceContract().THUMBNAIL_READY_EXTRA)}?.apply {
+                    val videoRecebido = intent.getSerializableExtra(mainActivity.mainViewModel.getVideoServiceContract().THUMBNAIL_READY_EXTRA) as Video
                     Log.d("ALLINFORMATION","ViewHolder 1")
                     if(videoRecebido.hastThumbFile() && videoRecebido.id == video.id) {
                         Log.d("ALLINFORMATION","ViewHolder 2")
                         thumbnail.setImageBitmap(BitmapFactory.decodeStream(videoRecebido.thumbFile.inputStream()))
-                        //thumbnail.layoutParams.width = ConstraintLayout.LayoutParams.MATCH_PARENT
-                        //thumbnail.layoutParams.height = ConstraintLayout.LayoutParams.WRAP_CONTENT
                         App.unregisterBroadcast(self)
                     }
                 }
@@ -60,22 +56,25 @@ class VideoAdapter(private val mainActivity: MainActivity) : RecyclerView.Adapte
 
     override fun onBindViewHolder(holder: VideoViewHolder, position: Int) {
         val video = videoList.getVideoAt(position)
-        holder.titulo.text = video.titulo
-        holder.data.text = video.data
-        holder.visualizacoes.text = video.visualizacoes.toString()
+        holder.titulo.text = video.title
+        holder.data.text = video.recorded
+        holder.visualizacoes.text = video.views.toString()
         holder.video = video
 
-        App.registerBroadcast(holder.thumbnailReceiver, IntentFilter(VideoServiceContract.THUMBNAIL_READY))
+        App.registerBroadcast(holder.thumbnailReceiver, IntentFilter(mainActivity.mainViewModel.getVideoServiceContract().THUMBNAIL_READY))
 
         Intent(mainActivity, VideoService::class.java).apply {
-            action = VideoServiceContract.THUMBNAIL_DOWNLOAD_ACTION
-            putExtra(VideoServiceContract.THUMBNAIL_DOWNLOAD_EXTRA, video)
+            action = mainActivity.mainViewModel.getVideoServiceContract().THUMBNAIL_DOWNLOAD_ACTION
+            putExtra(mainActivity.mainViewModel.getVideoServiceContract().THUMBNAIL_DOWNLOAD_EXTRA, video)
             mainActivity.startService(this)
-            Log.d("ALLINFORMATION", "Adapter->service thumb download")
         }
 
-        //Picasso.get().load(url).into(holder.thumbnail)
-        //holder.thumbnail.adjustViewBounds = true
+        holder.itemView.setOnClickListener {
+            val intent = Intent(it.context, VideoDetailsActivity::class.java).apply {
+                putExtra("posicao", position)
+            }
+            ContextCompat.startActivity(it.context, intent, null)
+        }
     }
 
 }

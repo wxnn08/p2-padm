@@ -13,17 +13,17 @@ class VideoList : Serializable {
 }
 
 data class Video (
-    var url: String,
+    var source: String,
     var thumbFile: File = File(""),
-    var palestrante: String,
+    var speaker: String,
     var likes: Int,
-    var titulo : String,
-    var duracao: String,
+    var title : String,
+    var duration: String,
     var dislikes: Int,
-    var visualizacoes : Int,
-    var data: String,
+    var views : Int,
+    var recorded: String,
     var id: Int,
-    var evento: String ) : Serializable {
+    var event: String ) : Serializable {
 
     fun hastThumbFile(): Boolean {
         return thumbFile.name.trim().isNotEmpty()
