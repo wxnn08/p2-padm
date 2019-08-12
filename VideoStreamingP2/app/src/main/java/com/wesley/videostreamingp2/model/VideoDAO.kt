@@ -1,7 +1,7 @@
 package com.wesley.videostreamingp2.model
 
 object VideoDAO {
-    const val URL : String = "http://192.168.1.234:8099"
+    const val URL : String = "http://192.168.15.12:8099"
 
     var videos = VideoList()
 

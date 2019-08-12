@@ -7,6 +7,7 @@ import android.content.IntentFilter
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.MediaController
 import android.widget.TextView
@@ -87,21 +88,12 @@ class VideoDetailsActivity : AppCompatActivity() {
         bindComponents()
         setStreaming(video)
         setClickListeners(video)
-        incrementView(video)
         attTextViews()
 
         App.registerBroadcast(attVideoInformation, IntentFilter(videoDetailsViewModel.getVideoServiceContract().VIDEO_INFORMATION))
         App.registerBroadcast(errorListReceiver, IntentFilter(videoDetailsViewModel.getVideoServiceContract().NOTIFY_ERROR))
     }
 
-    private fun incrementView(video: Video) {
-        Intent(this, VideoService::class.java).apply {
-            action = videoDetailsViewModel.getVideoServiceContract().VIEW_INCREMENT_ACTION
-            putExtra(videoDetailsViewModel.getVideoServiceContract().VIEW_INCREMENT_EXTRA, video.id)
-            startService(this)
-        }
-
-    }
 
     private fun setClickListeners(video : Video) {
         btnLike.setOnClickListener {
@@ -125,13 +117,14 @@ class VideoDetailsActivity : AppCompatActivity() {
         }
     }
 
+    private fun incrementView(video: Video) {
+        videoDetailsViewModel.incrementView(video, this)
+    }
+
     private fun setStreaming(video: Video) {
-        val url = VideoDAO.URL + "/video/${video.id}"
         try {
-            val uri = Uri.parse(url)
-            videoView.setMediaController(MediaController(this@VideoDetailsActivity))
-            videoView.setVideoURI(uri)
-        } catch (e:Exception) {
+            videoDetailsViewModel.setStreaming(video, videoView, this)
+        } catch (e: Exception) {
             notify(e.toString())
         }
     }
@@ -170,5 +163,6 @@ class VideoDetailsActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
         App.unregisterBroadcast(attVideoInformation)
+        videoDetailsViewModel.attVideoTimeStop(videoView)
     }
 }
